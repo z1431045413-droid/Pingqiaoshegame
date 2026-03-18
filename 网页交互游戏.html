@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课堂平翘舌闯关 · 云朵乐园</title>
+    <style>
+        /* 奶黄色卡通风格 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #fef7e4;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Neue', 'Chalkboard SE', 'Segoe UI', cursive, sans-serif;
+            padding: 20px;
+        }
+
+        /* 开始大标题 */
+        .start-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #fef7e4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.4s;
+        }
+        .start-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .start-box {
+            background-color: #ffb5c0;
+            padding: 40px 70px;
+            border-radius: 120px 120px 120px 120px / 80px 80px 80px 80px;
+            box-shadow: 0 20px 0 #d47d8c, 0 30px 30px rgba(0, 0, 0, 0.2);
+            border: 6px solid white;
+            cursor: pointer;
+            transform: rotate(-1deg);
+            transition: 0.1s;
+        }
+        .start-box:active {
+            transform: translateY(10px) rotate(-1deg);
+            box-shadow: 0 10px 0 #d47d8c, 0 25px 30px rgba(0,0,0,0.2);
+        }
+        .start-box h1 {
+            font-size: 5rem;
+            font-weight: 800;
+            color: #285f8b;
+            text-shadow: 6px 6px 0 #fff3b0, 8px 8px 0 rgba(0,0,0,0.1);
+            letter-spacing: 3px;
+            text-align: center;
+        }
+        @media (max-width: 700px) {
+            .start-box h1 { font-size: 3rem; }
+            .start-box { padding: 30px; }
+        }
+
+        /* 游戏主界面 */
+        .game-screen {
+            display: none;
+            width: 100%;
+            max-width: 1300px;
+        }
+        .game-screen.visible {
+            display: block;
+        }
+
+        .game-container {
+            background-color: #fef7e4;
+            border-radius: 80px;
+            padding: 30px 30px 40px;
+            box-shadow: 0 20px 0 #d9b382, 0 25px 30px rgba(0,0,0,0.2);
+        }
+
+        /* 右上角分数 */
+        .score-corner {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+        .score-board {
+            background: #f8cf87;
+            border-radius: 60px;
+            padding: 12px 35px;
+            box-shadow: 0 8px 0 #b48b4c, 0 10px 15px rgba(0,0,0,0.15);
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #2c4c6b;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            border: 3px solid white;
+        }
+        .score-board span {
+            background: #fef7e4;
+            padding: 0 25px;
+            border-radius: 50px;
+            font-size: 3rem;
+            color: #c44f4f;
+        }
+
+        /* 左右两列 */
+        .row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        /* 左边云朵卡片区 */
+        .cloud-area {
+            flex: 1.5;
+            min-width: 400px;
+            background: #fee1b9;
+            border-radius: 70px;
+            padding: 30px 20px 25px;
+            box-shadow: inset 0 -6px 0 #cb9f6b, 0 15px 15px rgba(0,0,0,0.2);
+            border: 4px solid #fff2d2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cloud-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px 18px;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+
+        /* 云朵卡片 — 无汉字，只有拼音 */
+        .cloud-card {
+            position: relative;
+            width: 100px;
+            height: 110px;
+            background: #f9a8d4;
+            border-radius: 70% 70% 50% 50% / 80% 80% 50% 50%;
+            box-shadow: 0 12px 0 #b05f8a, 0 12px 20px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.08s;
+            border: 3px solid white;
+            color: #1f4460;
+            font-size: 3.5rem;
+            font-weight: 800;
+        }
+        .cloud-card::before, .cloud-card::after {
+            content: '';
+            position: absolute;
+            background: inherit;
+            border-radius: 50%;
+            box-shadow: inherit;
+            border: 3px solid white;
+            z-index: -1;
+        }
+        .cloud-card::before {
+            width: 50px;
+            height: 50px;
+            top: -20px;
+            left: 10px;
+        }
+        .cloud-card::after {
+            width: 60px;
+            height: 60px;
+            top: -25px;
+            right: 8px;
+        }
+
+        .cloud-card.selected {
+            transform: translateY(7px);
+            box-shadow: 0 5px 0 #b05f8a, 0 12px 18px rgba(0,0,0,0.3);
+            filter: brightness(1.02);
+        }
+
+        /* 震动动画 */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+            100% { transform: translateX(0); }
+        }
+        .cloud-card.shake {
+            animation: shake 0.3s ease;
+        }
+
+        /* 左下动态提示区 — 两个文本框 */
+        .left-feedback-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        .feedback-bubble {
+            background: #f0b5b5;
+            border-radius: 60px 60px 60px 20px;
+            padding: 15px 25px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d4e2d;
+            box-shadow: 0 7px 0 #b16f6f, 0 8px 12px rgba(0,0,0,0.15);
+            border: 3px solid white;
+            text-align: center;
+            display: none;  /* 默认隐藏 */
+        }
+        .feedback-bubble.success {
+            background: #b1e6b1;
+            color: #1b4f1b;
+            box-shadow: 0 7px 0 #589658;
+        }
+        .feedback-bubble.error {
+            background: #ffb0a0;
+            color: #711f0e;
+            box-shadow: 0 7px 0 #b15a4a;
+        }
+        .feedback-bubble.show {
+            display: block;
+        }
+
+        .static-tip {
+            background: #c1e0ff;
+            border-radius: 80px 80px 80px 20px;
+            padding: 12px 20px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #1b4b6c;
+            box-shadow: 0 6px 0 #7fa3c2, 0 8px 12px rgba(0,0,0,0.15);
+            border: 3px solid white;
+            text-align: center;
+        }
+
+        /* 右侧挑战区 */
+        .challenge-area {
+            flex: 1;
+            min-width: 300px;
+            background: #fbe5b9;
+            border-radius: 70px;
+            padding: 30px 25px;
+            box-shadow: inset 0 -6px 0 #c9a05f, 0 15px 15px rgba(0,0,0,0.2);
+            border: 4px solid #ffeec9;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .word-show-box {
+            background: #fffad0;
+            border-radius: 70px;
+            padding: 25px 15px;
+            text-align: center;
+            box-shadow: 0 10px 0 #d6a75c, 0 8px 12px rgba(0,0,0,0.15);
+        }
+
+        .random-word {
+            font-size: 5rem;
+            font-weight: 800;
+            color: #b63e3e;
+            text-shadow: 5px 5px 0 #ffb882;
+            line-height: 1.3;
+            letter-spacing: 8px;
+        }
+
+        .listen-hint {
+            font-size: 1.8rem;
+            background: #ffdb8e;
+            border-radius: 50px;
+            padding: 10px;
+            color: #3a2c1b;
+            margin-top: 8px;
+            border: 2px solid white;
+        }
+
+        .interact-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            background: #fcf3dd;
+            border: none;
+            border-radius: 60px;
+            padding: 18px 8px;
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #295a7a;
+            box-shadow: 0 8px 0 #a39072, 0 8px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: 0.04s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            border: 3px solid white;
+        }
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #a39072, 0 8px 12px rgba(0,0,0,0.2);
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #a39072;
+            pointer-events: none;
+        }
+
+        .mic-btn {
+            background: #c5e0fa;
+            box-shadow: 0 8px 0 #67829c;
+        }
+
+        .next-btn {
+            background: #cfb0ff;
+            box-shadow: 0 8px 0 #8066a3;
+        }
+
+        .feedback-area {
+            background: #5f4c3b;
+            border-radius: 50px;
+            padding: 20px 15px;
+            color: #feeac2;
+            font-size: 1.6rem;
+            text-align: center;
+            border: 4px solid #fda94f;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .sub-feedback {
+            font-size: 1.2rem;
+            color: #ffdba5;
+            margin-top: 8px;
+        }
+
+        /* 颜色类 */
+        .color1 { background: #f9a8d4; } .color2 { background: #a7d0f0; } .color3 { background: #f5c48a; } 
+        .color4 { background: #b3d9b0; } .color5 { background: #f0b5e0; } .color6 { background: #ffe28a; }
+        .color7 { background: #c1b0e8; }
+    </style>
+</head>
+<body>
+    <!-- 开始屏幕 -->
+    <div class="start-screen" id="startScreen">
+        <div class="start-box" id="startBox">
+            <h1>📖 课堂平翘舌闯关 🎈</h1>
+        </div>
+    </div>
+
+    <!-- 主游戏界面 -->
+    <div class="game-screen" id="gameScreen">
+        <div class="game-container">
+            <!-- 右上角分数 -->
+            <div class="score-corner">
+                <div class="score-board">
+                    🎯 积分 <span id="scoreValue">0</span>
+                </div>
+            </div>
+
+            <!-- 左右列 -->
+            <div class="row">
+                <!-- 左边云朵卡片区 + 左下动态提示 -->
+                <div class="cloud-area">
+                    <div class="cloud-grid" id="cloudGrid"></div>
+
+                    <!-- 左下两个动态文本框 (成功/错误) -->
+                    <div class="left-feedback-area">
+                        <div class="feedback-bubble success" id="feedbackSuccess">🎉 太棒了，试着读一读这个词语吧！</div>
+                        <div class="feedback-bubble error" id="feedbackError">😕 请再仔细听一听</div>
+                    </div>
+                    <!-- 固定小提示 -->
+                    <div class="static-tip">
+                        💬 请先点击正确的声母卡片，再朗读
+                    </div>
+                </div>
+
+                <!-- 右侧挑战区 -->
+                <div class="challenge-area">
+                    <div class="word-show-box">
+                        <div class="random-word" id="currentWord">紫色</div>
+                        <div class="listen-hint" id="listenHint">🔊 仔细听，选出正确的声母</div>
+                    </div>
+
+                    <div class="interact-buttons">
+                        <button class="btn" id="listenWordBtn"><span>🔔</span> 听词语</button>
+                        <button class="btn mic-btn" id="speakBtn" disabled><span>🎤</span> 我读一遍</button>
+                        <button class="btn next-btn" id="nextWordBtn" disabled><span>⏩</span> 下一词</button>
+                    </div>
+
+                    <div class="feedback-area" id="feedbackMain">
+                        ✨ 点击卡片开始闯关吧
+                        <span class="sub-feedback" id="feedbackSub"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- 词库和声母 ----------
+            const wordsList = [
+                { word: '紫色', initial: 'z' },
+                { word: '吃饭', initial: 'ch' },
+                { word: '老师', initial: 'sh' },
+                { word: '司机', initial: 's' },
+                { word: '士兵', initial: 'sh' },
+                { word: '日光', initial: 'r' },
+                { word: '词语', initial: 'c' },
+                { word: '知道', initial: 'zh' },
+                { word: '中国', initial: 'zh' },
+                { word: '失望', initial: 'sh' }
+            ];
+
+            // 声母数据 (只有拼音，无汉字)
+            const initials = [
+                { pinyin: 'z' },
+                { pinyin: 'c' },
+                { pinyin: 's' },
+                { pinyin: 'zh' },
+                { pinyin: 'ch' },
+                { pinyin: 'sh' },
+                { pinyin: 'r' }
+            ];
+
+            // 状态变量
+            let currentIdx = 0;
+            let score = 0;
+            let selectedInitial = null;
+            let correctInitial = '';
+            let hasSelectedCorrect = false;
+            let hasSpokenPass = false;
+            let cloudCards = [];
+
+            // DOM 元素
+            const cloudGrid = document.getElementById('cloudGrid');
+            const scoreSpan = document.getElementById('scoreValue');
+            const currentWordEl = document.getElementById('currentWord');
+            const listenHint = document.getElementById('listenHint');
+            const listenBtn = document.getElementById('listenWordBtn');
+            const speakBtn = document.getElementById('speakBtn');
+            const nextBtn = document.getElementById('nextWordBtn');
+            const feedbackMain = document.getElementById('feedbackMain');
+            const feedbackSub = document.getElementById('feedbackSub');
+
+            // 左下两个动态反馈框
+            const fbSuccess = document.getElementById('feedbackSuccess');
+            const fbError = document.getElementById('feedbackError');
+
+            // 开始屏幕
+            const startScreen = document.getElementById('startScreen');
+            const gameScreen = document.getElementById('gameScreen');
+            document.getElementById('startBox').addEventListener('click', () => {
+                startScreen.classList.add('hidden');
+                gameScreen.classList.add('visible');
+                initGame();
+            });
+
+            // 辅助: 数组打乱
+            function shuffleArray(arr) {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+            // 渲染云朵卡片 (随机顺序, 无汉字)
+            function renderCloudCards() {
+                const shuffled = shuffleArray([...initials]);
+                cloudCards = shuffled;
+                cloudGrid.innerHTML = '';
+                shuffled.forEach((item, idx) => {
+                    const card = document.createElement('div');
+                    card.className = `cloud-card color${(idx % 7) + 1}`;
+                    card.setAttribute('data-pinyin', item.pinyin);
+                    card.setAttribute('data-index', idx);
+                    card.textContent = item.pinyin;  // 只显示拼音
+                    card.addEventListener('click', () => onCloudClick(item.pinyin, card));
+                    cloudGrid.appendChild(card);
+                });
+            }
+
+            // 更新当前词语显示
+            function updateCurrentWord() {
+                const wordObj = wordsList[currentIdx];
+                currentWordEl.innerText = wordObj.word;
+                correctInitial = wordObj.initial;
+                listenHint.innerText = '🔊 仔细听，选出正确的声母';
+                // 重置状态
+                selectedInitial = null;
+                hasSelectedCorrect = false;
+                hasSpokenPass = false;
+                speakBtn.disabled = true;
+                nextBtn.disabled = true;
+
+                // 移除所有卡片选中样式
+                document.querySelectorAll('.cloud-card').forEach(c => c.classList.remove('selected'));
+
+                // 隐藏左下两个动态框
+                fbSuccess.classList.remove('show');
+                fbError.classList.remove('show');
+
+                // 右侧反馈重置
+                feedbackMain.innerHTML = '👆 点击卡片选出声母';
+                feedbackSub.innerText = '';
+            }
+
+            // 显示左下成功提示
+            function showLeftSuccess(show = true) {
+                if (show) {
+                    fbSuccess.classList.add('show');
+                    fbError.classList.remove('show');
+                } else {
+                    fbSuccess.classList.remove('show');
+                }
+            }
+
+            // 显示左下错误提示
+            function showLeftError(show = true) {
+                if (show) {
+                    fbError.classList.add('show');
+                    fbSuccess.classList.remove('show');
+                } else {
+                    fbError.classList.remove('show');
+                }
+            }
+
+            // 震动卡片
+            function shakeCard(card) {
+                card.classList.add('shake');
+                setTimeout(() => {
+                    card.classList.remove('shake');
+                }, 300);
+            }
+
+            // 点击卡片
+            function onCloudClick(pinyin, cardElement) {
+                if (hasSpokenPass) {
+                    feedbackMain.innerHTML = '🎉 已经读对啦！点击“下一词”';
+                    return;
+                }
+
+                // 移除其他卡片选中样式
+                document.querySelectorAll('.cloud-card').forEach(c => c.classList.remove('selected'));
+                cardElement.classList.add('selected');
+                selectedInitial = pinyin;
+
+                // 判断对错
+                if (pinyin === correctInitial) {
+                    // 正确
+                    hasSelectedCorrect = true;
+                    speakBtn.disabled = false;   // 解锁朗读
+                    showLeftSuccess(true);        // 左下显示“太棒了，试着读一读”
+                    // 右侧反馈更新
+                    feedbackMain.innerHTML = '✅ 声母正确！请朗读词语';
+                    feedbackSub.innerText = '点击🎤按钮开始朗读';
+                } else {
+                    // 错误 — 震动卡片
+                    shakeCard(cardElement);
+                    hasSelectedCorrect = false;
+                    speakBtn.disabled = true;
+                    showLeftError(true);           // 左下显示“请再仔细听一听”
+                    // 右侧反馈
+                    feedbackMain.innerHTML = '❌ 声母不对，再试试';
+                    feedbackSub.innerText = `你选了 ${pinyin}，目标是 ${correctInitial}`;
+                }
+            }
+
+            // 语音合成：听词语
+            function speakWord(word) {
+                if (!window.speechSynthesis) {
+                    alert('浏览器不支持语音合成');
+                    return;
+                }
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(word);
+                utter.lang = 'zh-CN';
+                utter.rate = 0.9;
+                window.speechSynthesis.speak(utter);
+            }
+
+            // 编辑距离 (用于判断相似度)
+            function levenshtein(a, b) {
+                const matrix = [];
+                for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+                for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+                for (let i = 1; i <= b.length; i++) {
+                    for (let j = 1; j <= a.length; j++) {
+                        const cost = a[j-1] === b[i-1] ? 0 : 1;
+                        matrix[i][j] = Math.min(
+                            matrix[i-1][j] + 1,
+                            matrix[i][j-1] + 1,
+                            matrix[i-1][j-1] + cost
+                        );
+                    }
+                }
+                return matrix[b.length][a.length];
+            }
+
+            function wordSimilarity(w1, w2) {
+                if (!w1 || !w2) return 0;
+                const dist = levenshtein(w1, w2);
+                const maxLen = Math.max(w1.length, w2.length);
+                return 1 - dist / maxLen;
+            }
+
+            // 语音识别 (真实或模拟)
+            function attemptSpeechRecognition(callback) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'zh-CN';
+                    recognition.interimResults = false;
+                    recognition.maxAlternatives = 1;
+                    feedbackMain.innerHTML = '🎙️ 请开始朗读...';
+                    feedbackSub.innerText = '我在听';
+                    recognition.start();
+                    recognition.onresult = (event) => {
+                        const transcript = event.results[0][0].transcript.trim();
+                        callback(transcript);
+                    };
+                    recognition.onerror = () => {
+                        // 降级模拟
+                        simulateRecognition(callback);
+                    };
+                } else {
+                    simulateRecognition(callback);
+                }
+            }
+
+            function simulateRecognition(callback) {
+                feedbackMain.innerHTML = '🎤 模拟识别中...';
+                setTimeout(() => {
+                    const rand = Math.random();
+                    const currentWord = wordsList[currentIdx].word;
+                    if (rand < 0.8) {
+                        callback(currentWord);
+                    } else {
+                        const other = wordsList[(currentIdx + 1) % wordsList.length].word;
+                        callback(other);
+                    }
+                }, 1200);
+            }
+
+            // 朗读检测
+            function onSpeak() {
+                if (!hasSelectedCorrect) {
+                    feedbackMain.innerHTML = '⚠️ 请先点击正确的声母卡片';
+                    return;
+                }
+                if (hasSpokenPass) return;
+
+                attemptSpeechRecognition((recognizedText) => {
+                    const targetWord = wordsList[currentIdx].word;
+                    const sim = wordSimilarity(recognizedText, targetWord);
+                    if (sim >= 0.8 || recognizedText.includes(targetWord) || targetWord.includes(recognizedText)) {
+                        if (!hasSpokenPass) {
+                            hasSpokenPass = true;
+                            score += 10;
+                            scoreSpan.innerText = score;
+                            feedbackMain.innerHTML = '🏆 太棒了，+10分！';
+                            feedbackSub.innerText = `你读了 “${recognizedText}”`;
+                            nextBtn.disabled = false;
+                            speakBtn.disabled = true;
+
+                            // 左下可以隐藏成功提示，或者显示额外信息 (保持成功提示不变，但可额外)
+                            // 为了不干扰，可以保持 success 显示，但也可以加一句已完成
+                            // 我们选择保持 success 显示，因为已经正确朗读。
+                        }
+                    } else {
+                        feedbackMain.innerHTML = '😲 再试试？ 读音不太像';
+                        feedbackSub.innerText = `听成 “${recognizedText}” 再读一遍`;
+                    }
+                });
+            }
+
+            // 下一词
+            function nextWord() {
+                if (!hasSpokenPass) {
+                    feedbackMain.innerHTML = '🚫 需要先朗读成功';
+                    return;
+                }
+                currentIdx = (currentIdx + 1) % wordsList.length;
+                updateCurrentWord();
+                speakWord(wordsList[currentIdx].word);
+            }
+
+            // 初始化
+            function initGame() {
+                score = 0;
+                scoreSpan.innerText = score;
+                renderCloudCards();
+                currentIdx = Math.floor(Math.random() * wordsList.length);
+                updateCurrentWord();
+                setTimeout(() => speakWord(wordsList[currentIdx].word), 300);
+            }
+
+            // 事件绑定
+            listenBtn.addEventListener('click', () => {
+                speakWord(wordsList[currentIdx].word);
+            });
+
+            speakBtn.addEventListener('click', onSpeak);
+            nextBtn.addEventListener('click', nextWord);
+
+            // 重置游戏功能 (可选，可刷新页面)
+        })();
+    </script>
+</body>
+</html>
